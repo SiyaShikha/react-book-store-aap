@@ -1,4 +1,6 @@
 import { Component } from "react";
+import lodash from "lodash";
+import "./App.css";
 
 const books = [
   { title: "Book A", author: "Author X", year: 2021 },
@@ -13,10 +15,6 @@ const books = [
 ];
 
 class SearchBookBox extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     return (
       <>
@@ -49,6 +47,8 @@ class BookStore extends Component {
       books: books,
       searchText: "",
       searchCriterion: "title",
+      sortColumn: null,
+      sortAscending: true,
     };
   }
 
@@ -60,20 +60,37 @@ class BookStore extends Component {
     this.setState({ searchCriterion: criterion });
   };
 
-  render() {
-    const { books, searchText, searchCriterion } = this.state;
-
-    const filteredBooks = books.filter((book) => {
-      const lowerCaseSearchText = searchText.toLowerCase();
-      if (searchCriterion === "title") {
-        return book.title.toLowerCase().includes(lowerCaseSearchText);
-      } else if (searchCriterion === "author") {
-        return book.author.toLowerCase().includes(lowerCaseSearchText);
-      } else if (searchCriterion === "year") {
-        return book.year.toString().includes(lowerCaseSearchText);
-      }
-      return false;
+  handleSort = (column) => {
+    this.setState((prevState) => {
+      const isSameColumn = prevState.sortColumn === column;
+      const sortAscending = isSameColumn ? !prevState.sortAscending : true;
+      return {
+        sortColumn: column,
+        sortAscending,
+      };
     });
+  };
+
+  filterBooks(books, searchText, searchCriterion) {
+    const lowerCaseSearchText = searchText.toLowerCase();
+    return books.filter((book) =>
+      book[searchCriterion]
+        ?.toString()
+        .toLowerCase()
+        .includes(lowerCaseSearchText)
+    );
+  }
+
+  render() {
+    const { books, searchText, searchCriterion, sortColumn, sortAscending } =
+      this.state;
+
+    const filteredBooks = this.filterBooks(books, searchText, searchCriterion);
+    const sortedBooks = lodash.orderBy(
+      filteredBooks,
+      sortColumn,
+      sortAscending ? "asc" : "desc"
+    );
 
     return (
       <>
@@ -86,13 +103,34 @@ class BookStore extends Component {
           <table border="1">
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Year</th>
+                <th
+                  onClick={() => this.handleSort("title")}
+                  role="button"
+                  className="clickable-header"
+                >
+                  Title
+                  {sortColumn === "title" ? (sortAscending ? "↑" : "↓") : ""}
+                </th>
+                <th
+                  onClick={() => this.handleSort("author")}
+                  role="button"
+                  className="clickable-header"
+                >
+                  Author
+                  {sortColumn === "author" ? (sortAscending ? "↑" : "↓") : ""}
+                </th>
+                <th
+                  onClick={() => this.handleSort("year")}
+                  role="button"
+                  className="clickable-header"
+                >
+                  Year
+                  {sortColumn === "year" ? (sortAscending ? "↑" : "↓") : ""}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredBooks.map((book, index) => (
+              {sortedBooks.map((book, index) => (
                 <tr key={index}>
                   <td>{book.title}</td>
                   <td>{book.author}</td>
