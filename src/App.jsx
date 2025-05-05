@@ -27,14 +27,73 @@ class SearchBookBox extends Component {
           />
           <select
             onChange={(event) =>
-              this.props.onCriterionChange(event.target.value)
-            }
+              this.props.onCriterionChange(event.target.value)}
           >
             <option value="title">Title</option>
             <option value="author">Author</option>
             <option value="year">Year</option>
           </select>
         </div>
+      </>
+    );
+  }
+}
+
+class HeaderRow extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  sortSymbol() {
+    return this.props.sortAscending ? "↑" : "↓";
+  }
+
+  render() {
+    return (
+      <>
+        <tr>
+          <th
+            onClick={() => this.props.onClick("title")}
+            role="button"
+            className="clickable-header"
+          >
+            Title
+            {this.props.sortColumn === "title" ? this.sortSymbol() : ""}
+          </th>
+          <th
+            onClick={() => this.props.onClick("author")}
+            role="button"
+            className="clickable-header"
+          >
+            Author
+            {this.props.sortColumn === "author" ? this.sortSymbol() : ""}
+          </th>
+          <th
+            onClick={() => this.props.onClick("year")}
+            role="button"
+            className="clickable-header"
+          >
+            Year
+            {this.props.sortColumn === "year" ? this.sortSymbol() : ""}
+          </th>
+        </tr>
+      </>
+    );
+  }
+}
+
+class BookRow extends Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return (
+      <>
+        <tr>
+          <td>{this.props.book.title}</td>
+          <td>{this.props.book.author}</td>
+          <td>{this.props.book.year}</td>
+        </tr>
       </>
     );
   }
@@ -89,7 +148,7 @@ class BookStore extends Component {
     const sortedBooks = lodash.orderBy(
       filteredBooks,
       sortColumn,
-      sortAscending ? "asc" : "desc"
+      sortAscending ? "asc" : "desc",
     );
 
     return (
@@ -102,40 +161,15 @@ class BookStore extends Component {
         <div>
           <table border="1">
             <thead>
-              <tr>
-                <th
-                  onClick={() => this.handleSort("title")}
-                  role="button"
-                  className="clickable-header"
-                >
-                  Title
-                  {sortColumn === "title" ? (sortAscending ? "↑" : "↓") : ""}
-                </th>
-                <th
-                  onClick={() => this.handleSort("author")}
-                  role="button"
-                  className="clickable-header"
-                >
-                  Author
-                  {sortColumn === "author" ? (sortAscending ? "↑" : "↓") : ""}
-                </th>
-                <th
-                  onClick={() => this.handleSort("year")}
-                  role="button"
-                  className="clickable-header"
-                >
-                  Year
-                  {sortColumn === "year" ? (sortAscending ? "↑" : "↓") : ""}
-                </th>
-              </tr>
+              <HeaderRow
+                onClick={this.handleSort}
+                sortColumn={sortColumn}
+                sortAscending={sortAscending}
+              />
             </thead>
             <tbody>
               {sortedBooks.map((book, index) => (
-                <tr key={index}>
-                  <td>{book.title}</td>
-                  <td>{book.author}</td>
-                  <td>{book.year}</td>
-                </tr>
+                <BookRow key={index} book={book} />
               ))}
             </tbody>
           </table>
